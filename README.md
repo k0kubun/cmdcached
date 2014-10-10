@@ -21,6 +21,8 @@ $ go get github.com/k0kubun/ghq-listd
 
 ### Simple way
 
+Just replace your `ghq list` with:
+
 ```bash
 $ ghq-listd
 ```
@@ -28,8 +30,6 @@ $ ghq-listd
 On the first execution, it will start ghq-listd server automatically.  
 And then ghq-listd client will interact with ghq-listd server through unix domain socket.  
 From second execution, it will be fast.  
-  
-You can use this just replacing `ghq list` with it.
 
 ### Explicit way
 
