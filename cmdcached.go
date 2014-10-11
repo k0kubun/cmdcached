@@ -6,7 +6,7 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		startServer()
+		StartServer()
 	} else {
 		execCommand(args)
 	}
