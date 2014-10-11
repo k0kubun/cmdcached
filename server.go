@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/howeyc/fsnotify"
 	"github.com/sevlyar/go-daemon"
 )
 
@@ -36,6 +38,22 @@ type Server struct {
 }
 
 func (s *Server) Run() {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = watcher.Watch("/Users/k0kubun/src")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for {
+		select {
+		case ev := <-watcher.Event:
+			log.Println("[Event]", ev)
+		case err = <-watcher.Error:
+			log.Println("[Error]", err)
+		}
 	}
 }
