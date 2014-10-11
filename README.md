@@ -1,56 +1,56 @@
-# ghq-listd
+# Cmdcached
 
-Server-client based fast `ghq list`.  
-This only works as an replacement for [ghq](https://github.com/motemen/ghq)'s `list` command.
-
-## Why ghq-listd?
-
-Whenever you execute `ghq list`, it causes disk I/O.  
-Thus sometimes the execution will be very slow if you use HDD.  
-  
-So this ghq list daemon **provides a repository list cached on memory**.  
-It is updated by file system notification on your ghq directory.  
+High performance command cache server.  
+You can execute any static commands faster by cmdcached.
 
 ## Installation
 
 ```bash
-$ go get github.com/k0kubun/ghq-listd
+$ go get github.com/k0kubun/cmdcached
 ```
 
-## Usage
+## Example usage
 
-### Simple way
+### 1. ghq list
 
-Just replace your `ghq list` with:
+Example usage for [ghq](https://github.com/motemen/ghq). You can executes `ghq list` faster by cmdcached.
+
+#### Prefix cmdcached
 
 ```bash
-$ ghq-listd
+$ cmdcached ghq list
 ```
 
-On the first execution, it will start ghq-listd server automatically.  
-And then ghq-listd client will interact with ghq-listd server through unix domain socket.  
-From second execution, it will be fast.  
+You can use cached result by using `cmdcached ghq list` instead of `ghq list`.
+In the first execution, cmdcached server will be started.
+You can explicitly start it by just executing `cmdcached`.
 
-### Explicit way
+#### Write ~/.cmdcached
+
+```
+[ghq list]
+  subscribe=/home/k0kubun/src
+```
+
+When `/home/k0kubun/src`'s directory structure changes,
+command cache will be updated.
+
+### 2. git ls-files
+
+If you work on git repository with 10000+ files, `git ls-files` will be slow. Cmdcached can make it faster.
+
+#### Use cached result
 
 ```bash
-$ ghq-listd server
+$ cmdcached git ls-files
 ```
 
-It ensures that ghq-listd server is started.  
-You can write this in your `.bashrc`.
+#### Write ~/.cmdcached
 
-```bash
-$ ghq-listd client
+```
+[git ls-files]
+  each_directory=true
 ```
 
-This is subset of `ghq-listd`.  
-It does not check ghq-listd server is alive or not.
-
-## Acknowledgements
-
-I have no discontent for ghq on SSD.  
-This product is designed to be used on HDD environment.  
-  
-`ghq-listd` provides only `ghq list` function.  
-Even if you use this product, you still need to use original ghq for other sub-commands.
+If you enables `each_directory` option, current directory will be used as cache key too.
+Thus you can cache `git ls-files` per repository. The directory's file structure is subscribed.
