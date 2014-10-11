@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os/exec"
+)
 
 func execCommand(args []string) {
-	fmt.Printf("%#v\n", args)
+	cmd := exec.Command(args[0], args[1:]...)
+
+	result, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	fmt.Printf(string(result))
 }
