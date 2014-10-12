@@ -3,9 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
+	"os"
 
 	"github.com/howeyc/fsnotify"
 	"github.com/sevlyar/go-daemon"
+)
+
+const (
+	serverSock = "/tmp/cmdcached.sock"
 )
 
 func StartServer() {
@@ -38,6 +44,40 @@ type Server struct {
 }
 
 func (s *Server) Run() {
+	go s.Watch()
+
+	l, err := net.ListenUnix(
+		"unix",
+		&net.UnixAddr{serverSock, "unix"},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(serverSock)
+
+	for {
+		conn, err := l.AcceptUnix()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		go s.Serve(conn)
+	}
+}
+
+func (s *Server) Serve(conn *net.UnixConn) {
+	defer conn.Close()
+
+	var buf [1024]byte
+	n, err := conn.Read(buf[:])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("%s\n", string(buf[:n]))
+}
+
+func (s *Server) Watch() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)

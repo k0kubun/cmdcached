@@ -8,6 +8,6 @@ func main() {
 	if len(args) == 0 {
 		StartServer()
 	} else {
-		execCommand(args)
+		RequestCache()
 	}
 }
