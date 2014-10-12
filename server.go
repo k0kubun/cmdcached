@@ -41,9 +41,13 @@ func StartServer() {
 }
 
 type Server struct {
+	config *Config
 }
 
 func (s *Server) Run() {
+	s.config = new(Config)
+	s.config.Load()
+
 	go s.Watch()
 
 	os.Remove(serverSock) // avoid "address already in use"
