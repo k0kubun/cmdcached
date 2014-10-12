@@ -27,9 +27,12 @@ You can explicitly start it by just executing `cmdcached`.
 
 #### Write ~/.cmdcached
 
+You should write ~/.cmdcached with [toml](https://github.com/toml-lang/toml).
+
 ```
-[ghq list]
-  subscribe=/home/k0kubun/src
+[[cache]]
+command = "ghq list"
+subscribe = "/home/k0kubun/src"
 ```
 
 When `/home/k0kubun/src`'s directory structure changes,
@@ -48,8 +51,9 @@ $ cmdcached git ls-files
 #### Write ~/.cmdcached
 
 ```
-[git ls-files]
-  each_directory=true
+[[cache]]
+command = "git ls-files"
+each_directory = true
 ```
 
 If you enables `each_directory` option, current directory will be used as cache key too.
