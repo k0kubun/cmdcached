@@ -11,6 +11,12 @@ $ go get github.com/k0kubun/cmdcached
 
 ## Example usage
 
+First of all, you should start cmdcached server.
+
+```bash
+$ cmdcached
+```
+
 ### 1. ghq list
 
 Example usage for [ghq](https://github.com/motemen/ghq). You can executes `ghq list` faster by cmdcached.
@@ -22,21 +28,16 @@ $ cmdcached ghq list
 ```
 
 You can use cached result by using `cmdcached ghq list` instead of `ghq list`.
-In the first execution, cmdcached server will be started.
-You can explicitly start it by just executing `cmdcached`.
 
 #### Write ~/.cmdcached
 
-You should write ~/.cmdcached with [toml](https://github.com/toml-lang/toml).
+To update cache on directory structure change, write ~/.cmdcached with [toml](https://github.com/toml-lang/toml).
 
 ```
 [[cache]]
 command = "ghq list"
 subscribe = "/home/k0kubun/src"
 ```
-
-When `/home/k0kubun/src`'s directory structure changes,
-command cache will be updated.
 
 ### 2. git ls-files
 
