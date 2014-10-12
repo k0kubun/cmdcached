@@ -46,19 +46,23 @@ type Server struct {
 func (s *Server) Run() {
 	go s.Watch()
 
+	os.Remove(serverSock) // avoid "address already in use"
 	l, err := net.ListenUnix(
 		"unix",
 		&net.UnixAddr{serverSock, "unix"},
 	)
+
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer os.Remove(serverSock)
 
 	for {
 		conn, err := l.AcceptUnix()
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
 
 		go s.Serve(conn)
@@ -71,21 +75,25 @@ func (s *Server) Serve(conn *net.UnixConn) {
 	var buf [1024]byte
 	n, err := conn.Read(buf[:])
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
-
 	log.Printf("%s\n", string(buf[:n]))
+
+	conn.Write([]byte("response"))
 }
 
 func (s *Server) Watch() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	err = watcher.Watch("/Users/k0kubun/src")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	for {
