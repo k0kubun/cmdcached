@@ -1,18 +1,32 @@
 package main
 
-import (
-	"fmt"
-	"os/exec"
+import "os/exec"
+
+var (
+	resultCache = make(map[string]string)
 )
 
-func execCommand(args []string) {
-	cmd := exec.Command(args[0], args[1:]...)
+func CachedExec(command string) (string, error) {
+	if result, ok := resultCache[command]; ok {
+		return result, nil
+	}
+
+	result, err := Exec(command)
+	if err != nil {
+		return "", err
+	}
+	resultCache[command] = result
+
+	return result, nil
+}
+
+func Exec(command string) (string, error) {
+	cmd := exec.Command("ghq", "list")
 
 	result, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return "", err
 	}
 
-	fmt.Printf(string(result))
+	return string(result), nil
 }

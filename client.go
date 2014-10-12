@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 const (
 	clientSock = "/tmp/cmdcached.client.sock"
+	maxBuf     = 1024 * 1024
 )
 
 func RequestCache() {
@@ -25,17 +27,17 @@ func RequestCache() {
 	defer conn.Close()
 	defer os.Remove(clientSock)
 
-	_, err = conn.Write([]byte("hello"))
+	_, err = conn.Write([]byte("ghq list"))
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	var buf [1024]byte
+	var buf [maxBuf]byte
 	n, err := conn.Read(buf[:])
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Printf("%s\n", string(buf[:n]))
+	fmt.Printf(string(buf[:n]))
 }

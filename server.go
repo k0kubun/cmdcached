@@ -78,9 +78,13 @@ func (s *Server) Serve(conn *net.UnixConn) {
 		log.Println(err)
 		return
 	}
-	log.Printf("%s\n", string(buf[:n]))
+	result, err := CachedExec(string(buf[:n]))
+	if err != nil {
+		conn.Write([]byte(err.Error()))
+		return
+	}
 
-	conn.Write([]byte("response"))
+	conn.Write([]byte(result))
 }
 
 func (s *Server) Watch() {
