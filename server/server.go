@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/howeyc/fsnotify"
 )
@@ -112,7 +113,8 @@ func (s *Server) cachedExec(command string) (string, error) {
 }
 
 func (s *Server) exec(command string) (string, error) {
-	cmd := exec.Command("ghq", "list")
+	args := strings.Split(command, " ")
+	cmd := exec.Command(args[0], args[1:]...)
 
 	result, err := cmd.Output()
 	if err != nil {

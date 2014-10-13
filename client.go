@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/k0kubun/cmdcached/server"
 )
@@ -35,12 +36,13 @@ func NewClient() *Client {
 	return c
 }
 
-func (c *Client) RequestCache() {
+func (c *Client) RequestCache(args []string) {
 	if c.conn == nil {
 		return
 	}
 
-	_, err := c.conn.Write([]byte("ghq list"))
+	command := strings.Join(args, " ")
+	_, err := c.conn.Write([]byte(command))
 	if err != nil {
 		log.Println(err)
 		return

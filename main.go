@@ -13,7 +13,7 @@ func main() {
 		server.Start()
 	} else {
 		client := NewClient()
-		client.RequestCache()
+		client.RequestCache(args)
 		client.Close()
 	}
 }
