@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	serverSock = "/tmp/cmdcached.sock"
+	ServerSock = "/tmp/cmdcached.sock"
 )
 
-func StartServer() {
+func Start() {
 	context := &daemon.Context{
 		PidFileName: "/tmp/cmdcached.pid",
 		PidFilePerm: 0644,
@@ -50,17 +50,17 @@ func (s *Server) Run() {
 
 	go s.Watch()
 
-	os.Remove(serverSock) // avoid "address already in use"
+	os.Remove(ServerSock) // avoid "address already in use"
 	l, err := net.ListenUnix(
 		"unix",
-		&net.UnixAddr{serverSock, "unix"},
+		&net.UnixAddr{ServerSock, "unix"},
 	)
 
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	defer os.Remove(serverSock)
+	defer os.Remove(ServerSock)
 
 	for {
 		conn, err := l.AcceptUnix()

@@ -1,12 +1,16 @@
 package main
 
-import "os"
+import (
+	"os"
+
+	"github.com/k0kubun/cmdcached/server"
+)
 
 func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		StartServer()
+		server.Start()
 	} else {
 		RequestCache()
 	}

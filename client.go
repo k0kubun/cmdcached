@@ -5,19 +5,21 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"github.com/k0kubun/cmdcached/server"
 )
 
 const (
-	clientSock = "/tmp/cmdcached.client.sock"
+	ClientSock = "/tmp/cmdcached.client.sock"
 	maxBuf     = 1024 * 1024
 )
 
 func RequestCache() {
-	os.Remove(clientSock) // avoid "adress already in use"
+	os.Remove(ClientSock) // avoid "adress already in use"
 	conn, err := net.DialUnix(
 		"unix",
-		&net.UnixAddr{clientSock, "unix"},
-		&net.UnixAddr{serverSock, "unix"},
+		&net.UnixAddr{ClientSock, "unix"},
+		&net.UnixAddr{server.ServerSock, "unix"},
 	)
 
 	if err != nil {
@@ -25,7 +27,7 @@ func RequestCache() {
 		return
 	}
 	defer conn.Close()
-	defer os.Remove(clientSock)
+	defer os.Remove(ClientSock)
 
 	_, err = conn.Write([]byte("ghq list"))
 	if err != nil {
