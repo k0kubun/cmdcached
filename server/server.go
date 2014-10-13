@@ -11,6 +11,7 @@ import (
 
 const (
 	ServerSock = "/tmp/cmdcached.sock"
+	ConnType   = "unix"
 )
 
 type Server struct {
@@ -27,8 +28,8 @@ func NewServer() *Server {
 
 	os.Remove(ServerSock) // avoid "address already in use"
 	l, err := net.ListenUnix(
-		"unix",
-		&net.UnixAddr{ServerSock, "unix"},
+		ConnType,
+		&net.UnixAddr{ServerSock, ConnType},
 	)
 	if err != nil {
 		log.Println(err)

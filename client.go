@@ -11,7 +11,6 @@ import (
 
 const (
 	ClientSock = "/tmp/cmdcached.client.sock"
-	connType   = "unix"
 	maxBuf     = 1024 * 1024
 )
 
@@ -24,9 +23,9 @@ func NewClient() *Client {
 
 	os.Remove(ClientSock) // avoid "adress already in use"
 	conn, err := net.DialUnix(
-		connType,
-		&net.UnixAddr{ClientSock, connType},
-		&net.UnixAddr{server.ServerSock, connType},
+		server.ConnType,
+		&net.UnixAddr{ClientSock, server.ConnType},
+		&net.UnixAddr{server.ServerSock, server.ConnType},
 	)
 	if err != nil {
 		fmt.Printf(err.Error())
