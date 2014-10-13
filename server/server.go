@@ -13,6 +13,7 @@ import (
 const (
 	ServerSock = "/tmp/cmdcached.sock"
 	ConnType   = "unix"
+	maxBuf     = 1024
 )
 
 type Server struct {
@@ -55,7 +56,7 @@ func (s *Server) Run() {
 func (s *Server) Serve(conn *net.UnixConn) {
 	defer conn.Close()
 
-	var buf [1024]byte
+	var buf [maxBuf]byte
 	n, err := conn.Read(buf[:])
 	if err != nil {
 		log.Println(err)
