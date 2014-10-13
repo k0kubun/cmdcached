@@ -63,6 +63,22 @@ func (c *Config) Load() {
 	log.Println("config reloaded")
 }
 
+func (c *Config) DirIgnorable(cmd string) bool {
+	cc := c.cacheConfigFor(cmd)
+	return !cc.EachDirectory
+}
+
+func (c *Config) cacheConfigFor(cmd string) *CacheConfig {
+	for _, cc := range c.CacheConfigs {
+		if cc.Command == cmd {
+			return &cc
+		}
+	}
+	return &CacheConfig{
+		Command: cmd,
+	}
+}
+
 func (c *Config) watchConfig() {
 	for {
 		select {

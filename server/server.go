@@ -19,11 +19,13 @@ type Server struct {
 	config      *Config
 	resultCache map[string]string
 	listener    *net.UnixListener
+	subscriber  *Subscriber
 }
 
 func NewServer() *Server {
 	s := new(Server)
 	s.config = NewConfig()
+	s.subscriber = NewSubscriber()
 	s.resultCache = make(map[string]string)
 
 	os.Remove(ServerSock) // avoid "address already in use"
@@ -83,7 +85,12 @@ func (s *Server) Close() {
 }
 
 func (s *Server) cachedExec(dir, command string) (string, error) {
-	if result, ok := s.resultCache[command]; ok {
+	cacheKey := command
+	if !s.config.DirIgnorable(command) {
+		cacheKey = dir + "\n" + command
+	}
+
+	if result, ok := s.resultCache[cacheKey]; ok {
 		return result, nil
 	}
 
@@ -91,15 +98,17 @@ func (s *Server) cachedExec(dir, command string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s.resultCache[command] = result
+	s.resultCache[cacheKey] = result
 
 	return result, nil
 }
 
 func (s *Server) exec(dir, command string) (string, error) {
-	err := os.Chdir(dir)
-	if err != nil {
-		return "", err
+	if !s.config.DirIgnorable(command) {
+		err := os.Chdir(dir)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	args := strings.Split(command, " ")
