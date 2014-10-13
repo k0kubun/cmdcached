@@ -46,6 +46,9 @@ func NewServer() *Server {
 }
 
 func (s *Server) Run() {
+	s.subscribeAll()
+	s.eagerLoad()
+
 	for {
 		conn, err := s.listener.AcceptUnix()
 		if err != nil {
@@ -132,11 +135,41 @@ func (s *Server) exec(dir, cmd string) (string, error) {
 	return string(result), nil
 }
 
+func (s *Server) subscribeAll() {
+	for _, cc := range s.config.CacheConfigs {
+		if len(cc.Subscribe) > 0 {
+			s.subscriber.RecursiveAdd(cc.Subscribe)
+		}
+	}
+}
+
+func (s *Server) eagerLoad() {
+	for _, cc := range s.config.CacheConfigs {
+		if !cc.EachDirectory {
+			s.cachedExec("/tmp", cc.Command)
+		}
+	}
+}
+
 func (s *Server) cacheSweeper() {
 	for {
 		select {
-		case <-s.subscriber.Events:
-			// purge
+		case ev := <-s.subscriber.Events:
+			for cmd, _ := range s.cmdCache {
+				cc := s.config.cacheConfigFor(cmd)
+
+				if strings.HasPrefix(ev.Name, cc.Subscribe) {
+					result, err := s.exec("/tmp", cmd)
+					if err != nil {
+						log.Println(err)
+					}
+					s.cmdCache[cmd] = result
+					fmt.Println("update cache for:", cmd)
+				}
+			}
+
+			// TODO: support dirCmdCache
+			// waiting for your pull request
 		}
 	}
 }
