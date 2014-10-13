@@ -1,7 +1,9 @@
 # Cmdcached
 
-High performance command cache server.  
-You can execute any static commands faster by cmdcached.
+Command result cache server for your development.  
+You can execute any static commands faster by cmdcached.  
+  
+**WORK IN PROGRESS**
 
 ## Installation
 
@@ -59,3 +61,16 @@ each_directory = true
 
 If you enables `each_directory` option, current directory will be used as cache key too.
 Thus you can cache `git ls-files` per repository. The directory's file structure is subscribed.
+
+## Pending features
+
+I'm sorry but this project is **WORK IN PROGRESS**
+
+- Core
+  - file event subscription (`subscribe` directive)
+    - recursive subscription
+  - cache for each directory (`each_directory` directive)
+  - auto config reload on file event
+- Convenience
+  - check server process availability
+    - start server from client
