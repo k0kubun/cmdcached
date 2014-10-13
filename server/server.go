@@ -17,7 +17,8 @@ const (
 
 type Server struct {
 	config      *Config
-	resultCache map[string]string
+	cmdCache    map[string]string
+	dirCmdCache map[string]string
 	listener    *net.UnixListener
 	subscriber  *Subscriber
 }
@@ -26,7 +27,8 @@ func NewServer() *Server {
 	s := new(Server)
 	s.config = NewConfig()
 	s.subscriber = NewSubscriber()
-	s.resultCache = make(map[string]string)
+	s.cmdCache = make(map[string]string)
+	s.dirCmdCache = make(map[string]string)
 
 	os.Remove(ServerSock) // avoid "address already in use"
 	l, err := net.ListenUnix(
@@ -86,37 +88,43 @@ func (s *Server) Close() {
 	os.Remove(ServerSock)
 }
 
-func (s *Server) cachedExec(dir, command string) (string, error) {
-	cacheKey := command
-	if !s.config.DirIgnorable(command) {
-		cacheKey = dir + "\n" + command
+func (s *Server) cachedExec(dir, cmd string) (string, error) {
+	if s.config.DirIgnorable(cmd) {
+		if result, ok := s.cmdCache[cmd]; ok {
+			return result, nil
+		}
+	} else {
+		if result, ok := s.dirCmdCache[dir+"\n"+cmd]; ok {
+			return result, nil
+		}
 	}
 
-	if result, ok := s.resultCache[cacheKey]; ok {
-		return result, nil
-	}
-
-	result, err := s.exec(dir, command)
+	result, err := s.exec(dir, cmd)
 	if err != nil {
 		return "", err
 	}
-	s.resultCache[cacheKey] = result
+
+	if s.config.DirIgnorable(cmd) {
+		s.cmdCache[cmd] = result
+	} else {
+		s.dirCmdCache[dir+"\n"+cmd] = result
+	}
 
 	return result, nil
 }
 
-func (s *Server) exec(dir, command string) (string, error) {
-	if !s.config.DirIgnorable(command) {
+func (s *Server) exec(dir, cmd string) (string, error) {
+	if !s.config.DirIgnorable(cmd) {
 		err := os.Chdir(dir)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	args := strings.Split(command, " ")
-	cmd := exec.Command(args[0], args[1:]...)
+	args := strings.Split(cmd, " ")
+	c := exec.Command(args[0], args[1:]...)
 
-	result, err := cmd.Output()
+	result, err := c.Output()
 	if err != nil {
 		return "", err
 	}
