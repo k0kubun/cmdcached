@@ -28,6 +28,7 @@ func Start() {
 	}
 	defer context.Release()
 
-	server := new(Server)
+	server := NewServer()
 	server.Run()
+	server.Close()
 }

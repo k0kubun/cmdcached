@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 
 	"github.com/howeyc/fsnotify"
 )
@@ -13,32 +14,36 @@ const (
 )
 
 type Server struct {
-	config *Config
+	config      *Config
+	resultCache map[string]string
+	listener    *net.UnixListener
 }
 
-func (s *Server) Run() {
+func NewServer() *Server {
+	s := new(Server)
 	s.config = new(Config)
 	s.config.Load()
-
-	go s.Watch()
+	s.resultCache = make(map[string]string)
 
 	os.Remove(ServerSock) // avoid "address already in use"
 	l, err := net.ListenUnix(
 		"unix",
 		&net.UnixAddr{ServerSock, "unix"},
 	)
-
 	if err != nil {
 		log.Println(err)
-		return
 	}
-	defer os.Remove(ServerSock)
+	s.listener = l
 
+	return s
+}
+
+func (s *Server) Run() {
 	for {
-		conn, err := l.AcceptUnix()
+		conn, err := s.listener.AcceptUnix()
 		if err != nil {
 			log.Println(err)
-			return
+			continue
 		}
 
 		go s.Serve(conn)
@@ -54,7 +59,7 @@ func (s *Server) Serve(conn *net.UnixConn) {
 		log.Println(err)
 		return
 	}
-	result, err := CachedExec(string(buf[:n]))
+	result, err := s.cachedExec(string(buf[:n]))
 	if err != nil {
 		conn.Write([]byte(err.Error()))
 		return
@@ -63,7 +68,12 @@ func (s *Server) Serve(conn *net.UnixConn) {
 	conn.Write([]byte(result))
 }
 
-func (s *Server) Watch() {
+func (s *Server) Close() {
+	s.listener.Close()
+	os.Remove(ServerSock)
+}
+
+func (s *Server) watch() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Println(err)
@@ -84,4 +94,29 @@ func (s *Server) Watch() {
 			log.Println("[Error]", err)
 		}
 	}
+}
+
+func (s *Server) cachedExec(command string) (string, error) {
+	if result, ok := s.resultCache[command]; ok {
+		return result, nil
+	}
+
+	result, err := s.exec(command)
+	if err != nil {
+		return "", err
+	}
+	s.resultCache[command] = result
+
+	return result, nil
+}
+
+func (s *Server) exec(command string) (string, error) {
+	cmd := exec.Command("ghq", "list")
+
+	result, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	return string(result), nil
 }
