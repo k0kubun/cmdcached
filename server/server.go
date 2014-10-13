@@ -7,8 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/howeyc/fsnotify"
 )
 
 const (
@@ -82,29 +80,6 @@ func (s *Server) Serve(conn *net.UnixConn) {
 func (s *Server) Close() {
 	s.listener.Close()
 	os.Remove(ServerSock)
-}
-
-func (s *Server) watch() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	err = watcher.Watch("/Users/k0kubun/src")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	for {
-		select {
-		case ev := <-watcher.Event:
-			log.Println("[Event]", ev)
-		case err = <-watcher.Error:
-			log.Println("[Error]", err)
-		}
-	}
 }
 
 func (s *Server) cachedExec(dir, command string) (string, error) {
