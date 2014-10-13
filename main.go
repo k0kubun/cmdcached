@@ -12,6 +12,8 @@ func main() {
 	if len(args) == 0 {
 		server.Start()
 	} else {
-		RequestCache()
+		client := NewClient()
+		client.RequestCache()
+		client.Close()
 	}
 }
