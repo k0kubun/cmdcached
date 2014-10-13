@@ -70,7 +70,6 @@ I'm sorry but this project is **WORK IN PROGRESS**
   - file event subscription (`subscribe` directive)
     - recursive subscription
   - cache for each directory (`each_directory` directive)
-  - auto config reload on file event
 - Convenience
   - check server process availability
     - start server from client
