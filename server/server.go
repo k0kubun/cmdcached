@@ -38,6 +38,8 @@ func NewServer() *Server {
 	}
 	s.listener = l
 
+	go s.cacheSweeper()
+
 	return s
 }
 
@@ -120,4 +122,13 @@ func (s *Server) exec(dir, command string) (string, error) {
 	}
 
 	return string(result), nil
+}
+
+func (s *Server) cacheSweeper() {
+	for {
+		select {
+		case <-s.subscriber.Events:
+			// purge
+		}
+	}
 }
