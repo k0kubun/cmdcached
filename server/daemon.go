@@ -18,7 +18,7 @@ func Start() {
 
 	d, err := context.Reborn()
 	if err != nil {
-		fmt.Println("cmdcached is already started")
+		fmt.Println(err)
 		return
 	}
 	if d != nil {
