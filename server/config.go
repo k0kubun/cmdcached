@@ -21,6 +21,12 @@ type CacheConfig struct {
 	EachDirectory bool   `toml:"each_directory"`
 }
 
+func NewConfig() *Config {
+	c := new(Config)
+	c.Load()
+	return c
+}
+
 func (c *Config) Load() {
 	path := filepath.Join(homeDir(), configFile)
 	if !fileExists(path) {

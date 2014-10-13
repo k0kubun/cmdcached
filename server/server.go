@@ -25,8 +25,7 @@ type Server struct {
 
 func NewServer() *Server {
 	s := new(Server)
-	s.config = new(Config)
-	s.config.Load()
+	s.config = NewConfig()
 	s.resultCache = make(map[string]string)
 
 	os.Remove(ServerSock) // avoid "address already in use"
