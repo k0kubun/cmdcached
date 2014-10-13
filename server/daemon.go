@@ -12,7 +12,6 @@ func Start() {
 		PidFilePerm: 0644,
 		LogFileName: "/tmp/cmdcached.log",
 		LogFilePerm: 0640,
-		WorkDir:     "/tmp",
 		Umask:       027,
 		Args:        []string{"cmdcached server"},
 	}

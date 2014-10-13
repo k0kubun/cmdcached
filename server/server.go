@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -62,7 +63,15 @@ func (s *Server) Serve(conn *net.UnixConn) {
 		log.Println(err)
 		return
 	}
-	result, err := s.cachedExec(string(buf[:n]))
+
+	req := string(buf[:n])
+	reqs := strings.SplitN(req, "\n", 2)
+	if len(reqs) < 2 {
+		fmt.Printf("Invalid request %s\n", req)
+	}
+	dir, cmd := reqs[0], reqs[1]
+
+	result, err := s.cachedExec(dir, cmd)
 	if err != nil {
 		conn.Write([]byte(err.Error()))
 		return
@@ -99,12 +108,12 @@ func (s *Server) watch() {
 	}
 }
 
-func (s *Server) cachedExec(command string) (string, error) {
+func (s *Server) cachedExec(dir, command string) (string, error) {
 	if result, ok := s.resultCache[command]; ok {
 		return result, nil
 	}
 
-	result, err := s.exec(command)
+	result, err := s.exec(dir, command)
 	if err != nil {
 		return "", err
 	}
@@ -113,7 +122,12 @@ func (s *Server) cachedExec(command string) (string, error) {
 	return result, nil
 }
 
-func (s *Server) exec(command string) (string, error) {
+func (s *Server) exec(dir, command string) (string, error) {
+	err := os.Chdir(dir)
+	if err != nil {
+		return "", err
+	}
+
 	args := strings.Split(command, " ")
 	cmd := exec.Command(args[0], args[1:]...)
 

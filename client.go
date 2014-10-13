@@ -41,8 +41,10 @@ func (c *Client) RequestCache(args []string) {
 		return
 	}
 
-	command := strings.Join(args, " ")
-	_, err := c.conn.Write([]byte(command))
+	dir, _ := os.Getwd()
+	cmd := strings.Join(args, " ")
+
+	_, err := c.conn.Write([]byte(dir + "\n" + cmd))
 	if err != nil {
 		log.Println(err)
 		return
